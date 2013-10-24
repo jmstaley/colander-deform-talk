@@ -88,5 +88,7 @@ def simple_form(request):
 !SLIDE
 ## References
 
+* https://github.com/jmstaley/colander-deform-talk
+* http://jmstaley.github.io/colander-deform-talk
 * http://docs.pylonsproject.org/projects/deform
 * http://docs.pylonsproject.org/projects/colander
