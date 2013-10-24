@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->  <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	
+	<title>pydown</title>
+	
+	<meta name="description" content="A jQuery library for modern HTML presentations">
+	<meta name="author" content="Caleb Troughton">
+	<meta name="viewport" content="width=1024, user-scalable=no">
+	
+	<!-- Core and extension CSS files -->
+	<link rel="stylesheet" href="css/deck.core.css">
+  
+	<link rel="stylesheet" href="css/deck.scale.css">
+	
+	<!-- Style theme. More available in /themes/style/ or create your own. -->
+	<link rel="stylesheet" href="css/swiss-small.css">
+	
+	<!-- Transition theme. More available in /themes/transition/ or create your own. -->
+	<link rel="stylesheet" href="css/horizontal-slide.css">
+
+	<link rel="stylesheet" href="css/md_hl.css">
+	
+	<script src="js/modernizr.custom.js"></script>
+</head>
+
+<body class="deck-container">
+
+<!-- Begin slides -->
+<section class="slide "><div class="content"><h1>'king Forms</h1></div></section>
+<section class="slide "><div class="content"><h2>Overview</h2>
+<ul>
+<li>What is Deform?</li>
+<li>What is Colander?</li>
+<li>A simple form</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>What is Deform?</h2>
+<ul>
+<li class="slide">Form generation</li>
+<li class="slide">Form widgets</li>
+<li class="slide">Ajax forms</li>
+<li class="slide">Uses Colander for schemas</li>
+<li class="slide">Uses Chameleon for templating*</li>
+</ul>
+<p class="slide">* you can use other templating systems</p></div></section>
+<section class="slide "><div class="content"><h2>What is Colander?</h2>
+<div class="slide">
+
+<blockquote>
+<p>Colander is useful as a system for validating and deserializing data 
+obtained via XML, JSON, an HTML form post or any other equally simple 
+data serialization.</p>
+</blockquote>
+</div>
+
+<p class="slide">What does this mean for forms?</p>
+<ul>
+<li class="slide">Defining form schemas</li>
+<li class="slide">Validating form content</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>A simple form</h2>
+<p>To build a simple form we need:</p>
+<ul>
+<li class="slide">A colander Schema</li>
+<li class="slide">A deform form object</li>
+<li class="slide">A view callable</li>
+<li class="slide">A template</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>simple.py</h2>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">colander</span>
+<span class="kn">import</span> <span class="nn">deform</span>
+
+<span class="k">class</span> <span class="nc">Contact</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A simple colander schema &quot;&quot;&quot;</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">simple_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; view callable &quot;&quot;&quot;</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Contact</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span> <span class="c"># deform form</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>simple.pt</h2>
+<div class="codehilite"><pre><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;span</span> <span class="na">tal:replace=</span><span class="s">&quot;structure form&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>References</h2>
+<ul>
+<li>http://docs.pylonsproject.org/projects/deform</li>
+<li>http://docs.pylonsproject.org/projects/colander</li>
+</ul></div></section>
+
+
+
+
+<!-- Grab CDN jQuery, with a protocol relative URL; fall back to local if offline -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/jquery-1.7.2.min.js"><\/script>')</script>
+
+<!-- Deck Core and extensions -->
+<script src="js/deck.core.js"></script>
+
+<script src="js/deck.scale.js"></script>
+
+<!-- Initialize the deck -->
+<script>
+$(function() {
+	$.deck('.slide');
+});
+</script>
+
+</body>
+</html>
