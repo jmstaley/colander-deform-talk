@@ -1,5 +1,13 @@
+import os
+from pkg_resources import resource_filename
+
 import colander
 import deform
+
+deform_path = os.path.abspath('templates/deform')
+deform_templates = resource_filename('deform', 'templates')
+search_path = (deform_path, deform_templates)
+deform.Form.set_zpt_renderer(search_path)
 
 class Contact(colander.MappingSchema):
     email = colander.SchemaNode(colander.String(), validator=colander.Email())
@@ -25,11 +33,12 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 
 if __name__ == '__main__':
-    import os
     path = os.path.abspath('templates/simple.pt')
+
     config = Configurator()
     config.add_route('simple_form', '/')
     config.add_view(simple_form, renderer=path, route_name='simple_form')
+
     app = config.make_wsgi_app()
     server = make_server('0.0.0.0', 8080, app)
     server.serve_forever()
