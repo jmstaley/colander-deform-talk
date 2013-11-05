@@ -185,7 +185,7 @@ data serialization.</p>
     <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Business Name&#39;</span><span class="p">,</span> <span class="n">insert_before</span><span class="o">=</span><span class="s">&#39;line1&#39;</span><span class="p">)</span>
     <span class="n">month</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Start month&#39;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">month_validator</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">inheritance_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">validators_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Business</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
         <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -260,12 +260,54 @@ data serialization.</p>
 <li class="slide">deform needs to know where to find the templates</li>
 </ul></div></section>
 <section class="slide "><div class="content"><h2>Where to find the templates</h2>
+<p>Global:</p>
 <div class="codehilite"><pre><span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
 <span class="kn">from</span> <span class="nn">deform</span> <span class="kn">import</span> <span class="n">Form</span>
 
 <span class="n">deform_templates</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s">&#39;deform&#39;</span><span class="p">,</span> <span class="s">&#39;templates&#39;</span><span class="p">)</span>
 <span class="n">search_path</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;/path/to/your/templates&#39;</span><span class="p">,</span> <span class="n">deform_templates</span><span class="p">)</span>
 <span class="n">Form</span><span class="o">.</span><span class="n">set_zpt_renderer</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Specific forms</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+<span class="kn">from</span> <span class="nn">deform</span> <span class="kn">import</span> <span class="n">Form</span><span class="p">,</span> <span class="n">ZPTRendererFactory</span>
+
+<span class="n">deform_templates</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s">&#39;deform&#39;</span><span class="p">,</span> <span class="s">&#39;templates&#39;</span><span class="p">)</span>
+<span class="n">search_path</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;/path/to/your/templates&#39;</span><span class="p">,</span> <span class="n">deform_templates</span><span class="p">)</span>
+<span class="n">renderer</span> <span class="o">=</span> <span class="n">ZPTRendererFactory</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Override in action</h2>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+
+<span class="kn">import</span> <span class="nn">colander</span>
+<span class="kn">import</span> <span class="nn">deform</span>
+
+<span class="n">deform_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s">&#39;templates/deform&#39;</span><span class="p">)</span>
+<span class="n">deform_templates</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s">&#39;deform&#39;</span><span class="p">,</span> <span class="s">&#39;templates&#39;</span><span class="p">)</span>
+<span class="n">search_path</span> <span class="o">=</span> <span class="p">(</span><span class="n">deform_path</span><span class="p">,</span> <span class="n">deform_templates</span><span class="p">)</span>
+<span class="n">renderer</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">ZPTRendererFactory</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Contact</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">MappingSchema</span><span class="p">):</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">validator</span><span class="o">=</span><span class="n">colander</span><span class="o">.</span><span class="n">Email</span><span class="p">())</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">deform</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">TextAreaWidget</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">contact_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Contact</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,),</span> <span class="n">renderer</span><span class="o">=</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">submitted</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">deform</span><span class="o">.</span><span class="n">ValidationFailure</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="s">&#39;jon.staley@fundingoptions.com&#39;</span><span class="p">,</span>
+             <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jon&#39;</span><span class="p">,</span>
+             <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="s">&#39;Hello World&#39;</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">)}</span>
 </pre></div></div></section>
 <section class="slide "><div class="content"><h2>Overridden templates</h2>
 <p>Minimum of two templates are needed to be overridden to change the structure</p>
