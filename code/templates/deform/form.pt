@@ -20,10 +20,6 @@
   i18n:domain="deform"
   >
 
-  <fieldset class="deformFormFieldset">
-
-    <legend tal:condition="title">${title}</legend>
-
     <input type="hidden" name="_charset_" />
     <input type="hidden" name="__formid__" value="${formid}"/>
     <ul tal:condition="field.error">
@@ -58,8 +54,6 @@
           </button>
         </tal:block>
       </div>
-
-  </fieldset>
 
 <script type="text/javascript" tal:condition="use_ajax">
   deform.addCallback(

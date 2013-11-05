@@ -20,7 +20,7 @@ class Business(AddressSchema):
     business_name = colander.SchemaNode(colander.String(), title='Business Name', insert_before='line1')
     start_month = colander.SchemaNode(colander.String(), title='Start month', validator=month_validator)
 
-def inheritance_form(request):
+def validators_form(request):
     form = deform.Form(Business(), buttons=('submit',))
     if request.POST:
         submitted = request.POST.items()
@@ -29,20 +29,3 @@ def inheritance_form(request):
         except deform.ValidationFailure, e:
             return {'form': e.render()}
     return {'form': form.render()}
-
-from wsgiref.simple_server import make_server
-from pyramid.config import Configurator
-from pyramid.response import Response
-
-if __name__ == '__main__':
-    import os
-    path = os.path.abspath('templates/simple.pt')
-    config = Configurator()
-    config.add_route('simple_form', '/')
-    config.add_view(inheritance_form, renderer=path, route_name='simple_form')
-    app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 8080, app)
-    server.serve_forever()
-   
-
-

@@ -7,7 +7,7 @@ import deform
 deform_path = os.path.abspath('templates/deform')
 deform_templates = resource_filename('deform', 'templates')
 search_path = (deform_path, deform_templates)
-deform.Form.set_zpt_renderer(search_path)
+renderer = deform.ZPTRendererFactory(search_path)
 
 class Contact(colander.MappingSchema):
     email = colander.SchemaNode(colander.String(), validator=colander.Email())
@@ -15,8 +15,8 @@ class Contact(colander.MappingSchema):
     message = colander.SchemaNode(colander.String(),
                                   widget=deform.widget.TextAreaWidget())
 
-def simple_form(request):
-    form = deform.Form(Contact(), buttons=('submit',))
+def contact_form(request):
+    form = deform.Form(Contact(), buttons=('submit',), renderer=renderer)
     if request.POST:
         submitted = request.POST.items()
         try:
@@ -27,21 +27,3 @@ def simple_form(request):
              'name': 'Jon',
              'message': 'Hello World'}
     return {'form': form.render(data)}
-
-from wsgiref.simple_server import make_server
-from pyramid.config import Configurator
-from pyramid.response import Response
-
-if __name__ == '__main__':
-    path = os.path.abspath('templates/simple.pt')
-
-    config = Configurator()
-    config.add_route('simple_form', '/')
-    config.add_view(simple_form, renderer=path, route_name='simple_form')
-
-    app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 8080, app)
-    server.serve_forever()
-   
-
-
