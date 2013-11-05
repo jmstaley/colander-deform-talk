@@ -38,6 +38,7 @@
 <li>What is Deform?</li>
 <li>What is Colander?</li>
 <li>A simple form</li>
+<li>In production</li>
 </ul></div></section>
 <section class="slide "><div class="content"><h2>What is Deform?</h2>
 <ul>
@@ -75,17 +76,56 @@ data serialization.</p>
 <div class="codehilite"><pre><span class="kn">import</span> <span class="nn">colander</span>
 <span class="kn">import</span> <span class="nn">deform</span>
 
-<span class="k">class</span> <span class="nc">Contact</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A simple colander schema &quot;&quot;&quot;</span>
-    <span class="n">email</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+<span class="k">class</span> <span class="nc">Contact</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">MappingSchema</span><span class="p">):</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">validator</span><span class="o">=</span><span class="n">colander</span><span class="o">.</span><span class="n">Email</span><span class="p">())</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">deform</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">TextAreaWidget</span><span class="p">())</span>
 
 <span class="k">def</span> <span class="nf">simple_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; view callable &quot;&quot;&quot;</span>
-    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Contact</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span> <span class="c"># deform form</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Contact</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">submitted</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">deform</span><span class="o">.</span><span class="n">ValidationFailure</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="s">&#39;jon.staley@fundingoptions.com&#39;</span><span class="p">,</span>
+             <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jon&#39;</span><span class="p">,</span>
+             <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="s">&#39;Hello World&#39;</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">)}</span>
 </pre></div></div></section>
+<section class="slide "><div class="content"><h2>Default widgets</h2>
+<ul>
+<li>colander.String<ul>
+<li>deform.widget.TextInputWidget</li>
+</ul>
+</li>
+<li>colander.Integer<ul>
+<li>deform.widget.TextInputWidget</li>
+</ul>
+</li>
+<li>colander.Float<ul>
+<li>deform.widget.TextInputWidget</li>
+</ul>
+</li>
+<li>colander.Decimal<ul>
+<li>deform.widget.TextInputWidget</li>
+</ul>
+</li>
+<li>colander.Boolean<ul>
+<li>deform.widget.CheckboxWidget</li>
+</ul>
+</li>
+<li>colander.Date<ul>
+<li>deform.widget.DateInputWidget</li>
+</ul>
+</li>
+<li>colander.DateTime<ul>
+<li>deform.widget.DateTimeInputWidget</li>
+</ul>
+</li>
+</ul></div></section>
 <section class="slide "><div class="content"><h2>simple.pt</h2>
 <div class="codehilite"><pre><span class="nt">&lt;html&gt;</span>
   <span class="nt">&lt;body&gt;</span>
@@ -93,10 +133,159 @@ data serialization.</p>
   <span class="nt">&lt;/body&gt;</span>
 <span class="nt">&lt;/html&gt;</span>
 </pre></div></div></section>
+<section class="slide "><div class="content"><h2>How do we use deform and colander in production?</h2>
+<ul>
+<li class="slide">Schema inheritance</li>
+<li class="slide">Custom validators</li>
+<li class="slide">Defered validators (Schema Binding)</li>
+<li class="slide">Custom templates</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>Schema inheritance</h2>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">colander</span>
+<span class="kn">import</span> <span class="nn">deform</span>
+
+<span class="k">class</span> <span class="nc">AddressSchema</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">MappingSchema</span><span class="p">):</span>
+    <span class="n">line1</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 1&#39;</span><span class="p">)</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 2&#39;</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">line3</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 3&#39;</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">town</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Town&#39;</span><span class="p">)</span>
+    <span class="n">postcode</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Postcode&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Business</span><span class="p">(</span><span class="n">AddressSchema</span><span class="p">):</span>
+    <span class="n">business_name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Business Name&#39;</span><span class="p">,</span> <span class="n">insert_before</span><span class="o">=</span><span class="s">&#39;line1&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inheritance_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Business</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">submitted</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">deform</span><span class="o">.</span><span class="n">ValidationFailure</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Custom validators</h2>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">month_validator</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">month</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">month</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="n">int_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">int_month</span> <span class="o">&lt;</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">colander</span><span class="o">.</span><span class="n">Invalid</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s">&#39;Please enter a number between 1 and 12&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">colander</span><span class="o">.</span><span class="n">Invalid</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s">&#39;Please enter a number&#39;</span><span class="p">)</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Custom validators</h2>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">AddressSchema</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">MappingSchema</span><span class="p">):</span>
+    <span class="n">line1</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 1&#39;</span><span class="p">)</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 2&#39;</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">line3</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Address line 3&#39;</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">town</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Town&#39;</span><span class="p">)</span>
+    <span class="n">postcode</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Postcode&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Business</span><span class="p">(</span><span class="n">AddressSchema</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Business Name&#39;</span><span class="p">,</span> <span class="n">insert_before</span><span class="o">=</span><span class="s">&#39;line1&#39;</span><span class="p">)</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Start month&#39;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">month_validator</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inheritance_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">Business</span><span class="p">(),</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">submitted</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">deform</span><span class="o">.</span><span class="n">ValidationFailure</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Defered validators (Schema binding)</h2>
+<ul>
+<li class="slide">For when you don't have enough information</li>
+<li class="slide">Keyword arguments resolved later</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>defered_validator.py</h2>
+<div class="codehilite"><pre><span class="nd">@colander.deferred</span>
+<span class="k">def</span> <span class="nf">deferred_csrf_default</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">kw</span><span class="p">):</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;request&#39;</span><span class="p">)</span>
+    <span class="n">csrf_token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">csrf_token</span>
+
+<span class="nd">@colander.deferred</span>
+<span class="k">def</span> <span class="nf">deferred_csrf_validator</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">kw</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">validate_csrf_token</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;request&#39;</span><span class="p">)</span>
+        <span class="n">csrf_token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">csrf_token</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">colander</span><span class="o">.</span><span class="n">Invalid</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s">&#39;Bad CSRF token&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">validate_csrf_token</span>
+
+<span class="k">class</span> <span class="nc">CSRFSchema</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
+    <span class="n">csrf</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span>
+        <span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">deferred_csrf_default</span><span class="p">,</span>
+        <span class="n">validator</span> <span class="o">=</span> <span class="n">deferred_csrf_validator</span><span class="p">,</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">HiddenWidget</span><span class="p">(),</span>
+        <span class="p">)</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>defered_validator.py</h2>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">Contact</span><span class="p">(</span><span class="n">CSRFSchema</span><span class="p">):</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="n">validator</span><span class="o">=</span><span class="n">colander</span><span class="o">.</span><span class="n">Email</span><span class="p">())</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">())</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">colander</span><span class="o">.</span><span class="n">SchemaNode</span><span class="p">(</span><span class="n">colander</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">deform</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">TextAreaWidget</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">defered_form</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">Contact</span><span class="p">()</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">deform</span><span class="o">.</span><span class="n">Form</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">buttons</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;submit&#39;</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="n">submitted</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">submitted</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">deform</span><span class="o">.</span><span class="n">ValidationFailure</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">render</span><span class="p">()}</span>
+</pre></div>
+
+
+<p>For CSRF to work it needs a session</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">pyramid.config</span> <span class="kn">import</span> <span class="n">Configurator</span>
+<span class="kn">from</span> <span class="nn">pyramid.session</span> <span class="kn">import</span> <span class="n">UnencryptedCookieSessionFactoryConfig</span>
+
+<span class="n">my_session_factory</span> <span class="o">=</span> <span class="n">UnencryptedCookieSessionFactoryConfig</span><span class="p">(</span><span class="s">&#39;itsaseekreet&#39;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">Configurator</span><span class="p">(</span><span class="n">session_factory</span> <span class="o">=</span> <span class="n">my_session_factory</span><span class="p">)</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Custom templates</h2>
+<ul>
+<li class="slide">The default templates are functional</li>
+<li class="slide">In version 0.9.9 templates are crap they use <code>&lt;ul&gt;</code></li>
+<li class="slide">In version 2.* templates are better they use <code>&lt;div&gt;</code></li>
+<li class="slide">deform needs to know where to find the templates</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>Where to find the templates</h2>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+<span class="kn">from</span> <span class="nn">deform</span> <span class="kn">import</span> <span class="n">Form</span>
+
+<span class="n">deform_templates</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s">&#39;deform&#39;</span><span class="p">,</span> <span class="s">&#39;templates&#39;</span><span class="p">)</span>
+<span class="n">search_path</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;/path/to/your/templates&#39;</span><span class="p">,</span> <span class="n">deform_templates</span><span class="p">)</span>
+<span class="n">Form</span><span class="o">.</span><span class="n">set_zpt_renderer</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span>
+</pre></div></div></section>
+<section class="slide "><div class="content"><h2>Overridden templates</h2>
+<p>Minimum of two templates are needed to be overridden to change the structure</p>
+<ul>
+<li class="slide">form.pt</li>
+<li class="slide">mapping.pt</li>
+</ul></div></section>
+<section class="slide "><div class="content"><h2>Other tricks</h2>
+<ul>
+<li class="slide">Override individual widget templates</li>
+<li class="slide">Arbitrary keyword arguments in widgets</li>
+<li class="slide">Custom widgets</li>
+<li class="slide">Validate multiple conditions with <code>colander.All</code></li>
+</ul></div></section>
 <section class="slide "><div class="content"><h2>References</h2>
 <ul>
-<li>http://docs.pylonsproject.org/projects/deform</li>
-<li>http://docs.pylonsproject.org/projects/colander</li>
+<li><a href="https://github.com/jmstaley/colander-deform-talk">https://github.com/jmstaley/colander-deform-talk</a></li>
+<li><a href="http://jmstaley.github.io/colander-deform-talk">http://jmstaley.github.io/colander-deform-talk</a></li>
+<li><a href="http://docs.pylonsproject.org/projects/deform">http://docs.pylonsproject.org/projects/deform</a></li>
+<li><a href="http://docs.pylonsproject.org/projects/colander">http://docs.pylonsproject.org/projects/colander</a></li>
 </ul></div></section>
 
 
